@@ -372,15 +372,104 @@ const generarHTML = (datos) => {
 };
 
 // ==========================================
+// FUNCIÓN PARA TRANSFORMAR DATOS DE N8N
+// ==========================================
+const transformarDatosN8N = (datosN8N) => {
+  // Si ya viene en el formato esperado, retornarlo tal cual
+  if (datosN8N.datos_cliente && datosN8N.datos_cotizacion) {
+    return datosN8N;
+  }
+  
+  // Transformar desde formato n8n
+  if (datosN8N.action === 'quote' && datosN8N.lead_data && datosN8N.product_data) {
+    const { lead_data, product_data } = datosN8N;
+    
+    // Calcular área en cm²
+    const area_cm2 = product_data.width_cm * product_data.height_cm;
+    const cantidad = product_data.quantity || 1500;
+    
+    // Tabla de precios por rango de área (precio por cm²)
+    // Puedes ajustar estos valores según tu tabla de precios real
+    const calcularPrecioUnitario = (area) => {
+      if (area <= 25) return 0.15;      // 0-25 cm²
+      if (area <= 50) return 0.12;      // 26-50 cm²
+      if (area <= 100) return 0.10;     // 51-100 cm²
+      if (area <= 200) return 0.08;     // 101-200 cm²
+      return 0.06;                       // >200 cm²
+    };
+    
+    const precioPorCm2 = calcularPrecioUnitario(area_cm2);
+    const precio_unitario = precioPorCm2 * area_cm2;
+    const subtotal = precio_unitario * cantidad;
+    const iva = subtotal * 0.16;
+    const total = subtotal + iva;
+    
+    // Formato de medidas
+    const medidas = `${product_data.width_cm}x${product_data.height_cm}`;
+    
+    return {
+      datos_cliente: {
+        nombre: lead_data.nombre || lead_data.empresa || 'Cliente',
+        atencion_a: lead_data.nombre || lead_data.empresa || 'Cliente',
+        telefono: lead_data.telefono || '',
+        correo: lead_data.correo || '',
+        proyecto: lead_data.proyecto || `Imanes ${medidas}CM`
+      },
+      datos_cotizacion: {
+        cantidad: cantidad,
+        precio_unitario: precio_unitario,
+        subtotal: subtotal,
+        iva: iva,
+        total: total,
+        medidas: medidas,
+        desglose_rangos: null
+      },
+      fecha: new Date().toLocaleDateString('es-MX', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      }),
+      ejecutivo: datosN8N.ejecutivo || 'Sistema Automático',
+      especificaciones: {
+        tamaño: `${product_data.width_cm}x${product_data.height_cm} cm (${area_cm2} cm²)`,
+        sustrato: 'Imán flexible de alta calidad',
+        acabados: 'Laminado mate, esquinas redondeadas',
+        empaque: 'Caja de cartón corrugado'
+      },
+      condiciones: {
+        pago: datosN8N.condiciones?.pago || '50% anticipo al confirmar orden, 50% restante contra entrega',
+        tiempo_entrega: datosN8N.condiciones?.tiempo_entrega || '10-12 días hábiles a partir de la aprobación del diseño',
+        lugar_entrega: datosN8N.condiciones?.lugar_entrega || 'Instalaciones del cliente',
+        diseño: datosN8N.condiciones?.diseño || 'Incluido sin costo adicional. Máximo 2 revisiones sin cargo'
+      }
+    };
+  }
+  
+  // Si no coincide con ningún formato, retornar error
+  throw new Error('Formato de datos no reconocido');
+};
+
+// ==========================================
 // ENDPOINT PARA GENERAR PDF
 // ==========================================
 app.post('/api/generar-pdf', async (req, res) => {
   try {
     console.log('📥 Recibiendo solicitud de PDF...');
     
-    const datos = req.body;
+    const datosRaw = req.body;
     
-    // Validar datos requeridos
+    // Transformar datos si vienen de n8n
+    let datos;
+    try {
+      datos = transformarDatosN8N(datosRaw);
+    } catch (error) {
+      return res.status(400).json({
+        error: true,
+        message: error.message || 'Formato de datos no válido'
+      });
+    }
+    
+    // Validar datos requeridos después de la transformación
     if (!datos.datos_cliente || !datos.datos_cotizacion) {
       return res.status(400).json({
         error: true,

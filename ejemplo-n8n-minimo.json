@@ -1,0 +1,15 @@
+{
+  "action": "quote",
+  "lead_data": {
+    "nombre": "Richard",
+    "telefono": "5555555555",
+    "correo": "prueba@gmail.com",
+    "empresa": null,
+    "proyecto": null
+  },
+  "product_data": {
+    "width_cm": 10,
+    "height_cm": 10,
+    "quantity": 1500
+  }
+}

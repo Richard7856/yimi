@@ -1,0 +1,22 @@
+{
+  "action": "quote",
+  "lead_data": {
+    "nombre": "Richard",
+    "telefono": "5555555555",
+    "correo": "prueba@gmail.com",
+    "empresa": null,
+    "proyecto": null
+  },
+  "product_data": {
+    "width_cm": 10,
+    "height_cm": 10,
+    "quantity": 1500
+  },
+  "ejecutivo": "Sistema Automático",
+  "condiciones": {
+    "pago": "50% anticipo al confirmar orden, 50% restante contra entrega",
+    "tiempo_entrega": "10-12 días hábiles a partir de la aprobación del diseño",
+    "lugar_entrega": "Instalaciones del cliente en CDMX",
+    "diseño": "Incluido sin costo adicional. Máximo 2 revisiones sin cargo"
+  }
+}

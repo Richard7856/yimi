@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const app = express();
 
 app.use(express.json({ limit: '10mb' }));
@@ -485,15 +486,33 @@ app.post('/api/generar-pdf', async (req, res) => {
     
     // Generar PDF con Puppeteer
     console.log('🚀 Iniciando Puppeteer...');
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    });
+    
+    // Configurar Chromium para Render/serverless
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
+    let browser;
+    
+    if (isProduction) {
+      // Usar @sparticuz/chromium para Render/serverless
+      chromium.setGraphicsMode(false);
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      });
+    } else {
+      // Desarrollo local - usar Puppeteer normal
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+        ]
+      });
+    }
     
     const page = await browser.newPage();
     await page.setContent(html, { 

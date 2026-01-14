@@ -1,0 +1,32 @@
+{
+  "datos_cliente": {
+    "nombre": "Empresa Ejemplo S.A. de C.V.",
+    "atencion_a": "Juan Pérez García",
+    "telefono": "5551234567",
+    "correo": "contacto@empresaejemplo.com",
+    "proyecto": "Campaña Publicitaria Q1 2024"
+  },
+  "datos_cotizacion": {
+    "cantidad": 1500,
+    "precio_unitario": 18.50,
+    "subtotal": 27750.00,
+    "iva": 4440.00,
+    "total": 32190.00,
+    "medidas": "10x15",
+    "desglose_rangos": ["5x5", "5x10"]
+  },
+  "fecha": "15/01/2024",
+  "ejecutivo": "María González",
+  "especificaciones": {
+    "tamaño": "10x15 cm",
+    "sustrato": "Imán flexible de alta calidad",
+    "acabados": "Laminado mate, esquinas redondeadas",
+    "empaque": "Caja de cartón corrugado, 100 piezas por caja"
+  },
+  "condiciones": {
+    "pago": "50% anticipo al confirmar orden, 50% restante contra entrega",
+    "tiempo_entrega": "10-12 días hábiles a partir de la aprobación del diseño",
+    "lugar_entrega": "Instalaciones del cliente en CDMX, sin costo adicional",
+    "diseño": "Incluido sin costo adicional. Máximo 2 revisiones sin cargo"
+  }
+}

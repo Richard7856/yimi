@@ -493,9 +493,13 @@ app.post('/api/generar-pdf', async (req, res) => {
     
     if (isProduction) {
       // Usar @sparticuz/chromium para Render/serverless
-      chromium.setGraphicsMode(false);
       browser = await puppeteer.launch({
-        args: chromium.args,
+        args: [
+          ...chromium.args,
+          '--hide-scrollbars',
+          '--disable-web-security',
+          '--disable-features=IsolateOrigins,site-per-process'
+        ],
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
@@ -503,15 +507,32 @@ app.post('/api/generar-pdf', async (req, res) => {
       });
     } else {
       // Desarrollo local - usar Puppeteer normal
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
-      });
+      try {
+        // Intentar usar puppeteer normal primero
+        const puppeteerFull = require('puppeteer');
+        browser = await puppeteerFull.launch({
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu'
+          ]
+        });
+      } catch (error) {
+        // Si falla, usar chromium
+        browser = await puppeteer.launch({
+          args: [
+            ...chromium.args,
+            '--hide-scrollbars',
+            '--disable-web-security'
+          ],
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+          ignoreHTTPSErrors: true,
+        });
+      }
     }
     
     const page = await browser.newPage();
